@@ -97,7 +97,7 @@ const User = mongoose.model('User', userSchema);
 
 // =========================================================
 
-app.get('/api/signin', isAuthenticated, (req, res) => {
+app.get('/api/signin', (req, res) => {
   
   const authorizationHeader = req.headers['authorization'];
   
@@ -106,12 +106,9 @@ app.get('/api/signin', isAuthenticated, (req, res) => {
     verify(jwtToken)
       .then(user => findOrCreate(purgeUser(user)))
       .then(createdUser => {
-        console.log(createdUser);
-
-        req.session.userId = createdUser._id;
-        req.session.name = createdUser.given_name;
-        req.session.save(() => res.json({ statusText: 'Success'}))
-        // res.json({ statusText: "SUCCESS"});
+        const {_id, given_name} = createdUser;
+        req.session.user = { _id, given_name};
+        res.json(createdUser);
       })
       .catch(err => {
         res.json(err);
@@ -119,6 +116,10 @@ app.get('/api/signin', isAuthenticated, (req, res) => {
   } else {
     res.send('Auth failure');
   }
+})
+
+app.get('/api/v1/me', isAuthenticated, (req, res) => {
+  res.json(req.session.user);
 })
 
 // ====================================
