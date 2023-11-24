@@ -3,16 +3,16 @@ const cors = require('cors');
 const { OAuth2Client } = require('google-auth-library');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const { isAuthenticated } = require('./middleware')
+const MongoStore = require('connect-mongo');
+const { isAuthenticated } = require('./middleware');
 
 const app = express()
 const client = new OAuth2Client();
-mongoose.connect('mongodb+srv://svs_admin:vimal@cluster0.n8kbefi.mongodb.net/?retryWrites=true&w=majority',{
+
+const clientPromise = mongoose.connect('mongodb+srv://svs_admin:vimal@cluster0.n8kbefi.mongodb.net/?retryWrites=true&w=majority',{
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(res => {
-  console.log('Mongoose connected');
-})
+}).then(m => m.connection.getClient())
 
 // ====================================
 
@@ -26,13 +26,17 @@ app.use(cors(corsOptions));
 
 app.use(session({  
   secret: 'some-secret-key',  
-  resave: true,
-  saveUninitialized: true,
+  resave: false,
+  saveUninitialized: false,
   cookie: { 
     secure: false, // This will only work if you have https enabled!
     maxAge: 6000000, // 1 min
     httpOnly: true,
-  } 
+  },
+  store: MongoStore.create({
+    clientPromise: clientPromise,
+    stringify: false,
+  }) 
 }));
 
 async function verify(token) {
