@@ -118,12 +118,17 @@ app.get('/api/signin', (req, res) => {
         res.json(err);
       });
   } else {
-    res.send('Auth failure');
+    res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 
   }
 })
 
 app.get('/api/v1/me', isAuthenticated, (req, res) => {
-  res.json(req.session.user);
+
+
+  const userId = req.session.user._id;
+  User.findOne({ '_id': userId })
+    .then(foundUser => res.json(foundUser))
+    .catch(err => res.status(401).json(err));
 })
 
 // ====================================
