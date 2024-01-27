@@ -1,26 +1,27 @@
 const { isAuthenticated } = require('../middleware'),
   router = require('express').Router(),
   { User } = require('../mongo/models'),
-  { findOrCreate, purgeUser, verify } = require('./lib');
+  { purgeUser, verify, findUser } = require('./lib');
 
 router.get('/api/signin', (req, res) => {
-  
   const authorizationHeader = req.headers['authorization'];
   
   if (authorizationHeader.startsWith('Bearer ')) {
     const jwtToken = authorizationHeader.split(' ')[1];
 
     verify(jwtToken)
-      .then(user => findOrCreate(purgeUser(user)))
-      .then(createdUser => {
-        const {_id, given_name} = createdUser;
+      .then(user => findUser(purgeUser(user)))
+      .then(foundUser => {
+        const {_id, given_name} = foundUser;
         req.session.user = { _id, given_name};
         console.log('here');
-        res.json(createdUser);
+        res.json(foundUser);
       })
       .catch(err => {
-        res.json(err);
-      });
+        // register new user
+        console.log('there')
+        res.status(401).json(err);
+      })
 
   } else {
     res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 

@@ -33,10 +33,21 @@ function findOrCreate(purgedUser) {
       });
   });
 }
+function findUser(purgedUser) {
+  return new Promise((resolve, reject) => {
+    User.findOne({'provider.providerId': purgedUser.provider.providerId})
+      .then(user => {
+        resolve(user);
+      })
+      .catch(err => {
+        reject(err);
+      })
+  })
+}
 
 function purgeUser(rawUser) {
   // WARNING: assuming its a google oauth
-  
+
   const purgedUser = {
     given_name: rawUser.given_name,
     family_name: rawUser.family_name,
@@ -53,5 +64,6 @@ function purgeUser(rawUser) {
 module.exports = { 
   findOrCreate,
   purgeUser,
-  verify
+  verify,
+  findUser
 }
