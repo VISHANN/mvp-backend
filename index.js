@@ -1,18 +1,17 @@
 const express = require('express');
 const cors = require('cors');
-const { OAuth2Client } = require('google-auth-library');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const { isAuthenticated } = require('./middleware');
-
+const authRoutes = require('./routes/auth');
 const app = express()
-const client = new OAuth2Client();
+
+// ====================================
 
 const clientPromise = mongoose.connect('mongodb+srv://svs_admin:vimal@cluster0.n8kbefi.mongodb.net/?retryWrites=true&w=majority',{
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(m => m.connection.getClient())
+}).then(m => m.connection.getClient());
 
 // ====================================
 
@@ -39,99 +38,11 @@ app.use(session({
   }) 
 }));
 
-async function verify(token) {
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: "732729862786-b9539gcumc7que63gif9b2d5pa4bs5mq.apps.googleusercontent.com",
-  });
-  const payload = ticket.getPayload();
-
-  return new Promise((resolve, reject) => {
-    if(payload) {
-      resolve(payload);
-    } else {
-      reject({error: "Authentication Token Verification failed"});
-    }
-  });
-}
-
-function purgeUser(rawUser) {
-  // WARNING: assuming its a google oauth
-  const purgedUser = {
-    given_name: rawUser.given_name,
-    family_name: rawUser.family_name,
-    picture: rawUser.picture,
-    provider: {
-      name: 'google',
-      providerId: rawUser.sub,
-      email: rawUser.email, 
-    }
-  }
-  return purgedUser;
-}
-function findOrCreate(purgedUser) {
-  // WARNING: assuming its a google oauth
-  // NOTE: user must be formatted according userSchema
-
-  return new Promise((resolve, reject) => {
-    User.findOneAndUpdate({'provider.providerId': purgedUser.provider.providerId}, purgedUser, {returnOriginal:false, upsert: true})
-      .then(doc => {
-        resolve(doc);
-      })
-      .catch(err => {
-        reject(err)
-      });
-  });
-}
-
-// ======================================================
-
-const userSchema = mongoose.Schema({
-  given_name: String,
-  family_name: String,
-  picture: String,
-  provider: {
-    name: String,
-    providerId: String,
-    email: String,
-    email_verified: Boolean,
-  },
-});
-const User = mongoose.model('User', userSchema);
-
 // =========================================================
 
-app.get('/api/signin', (req, res) => {
-  
-  const authorizationHeader = req.headers['authorization'];
-  
-  if (authorizationHeader.startsWith('Bearer ')) {
-    const jwtToken = authorizationHeader.split(' ')[1];
-    verify(jwtToken)
-      .then(user => findOrCreate(purgeUser(user)))
-      .then(createdUser => {
-        const {_id, given_name} = createdUser;
-        req.session.user = { _id, given_name};
-        res.json(createdUser);
-      })
-      .catch(err => {
-        res.json(err);
-      });
-  } else {
-    res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 
-  }
-})
+app.use(authRoutes);
 
-app.get('/api/v1/me', isAuthenticated, (req, res) => {
-
-
-  const userId = req.session.user._id;
-  User.findOne({ '_id': userId })
-    .then(foundUser => res.json(foundUser))
-    .catch(err => res.status(401).json(err));
-})
-
-// ====================================
+// =========================================================
 
 app.listen(process.env.PORT || 8000, () => {
   console.log('App listening on 3000')
