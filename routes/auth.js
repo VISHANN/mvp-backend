@@ -36,7 +36,7 @@ router.get('/api/signin', (req, res) => {
         return res.json(returnedUser);
       })
       .catch(err => {
-        console.log('/routes/auth.js: 30' + err);
+        console.log('/routes/auth.js: 30 \n' + err);
         res.status(401).json(err);
       })
 
@@ -60,61 +60,59 @@ router.get('/api/v1/me', isAuthenticated, (req, res) => {
     .catch(err => res.status(401).json(err));
 })
 
-// router.post('/api/v1/signup', (req, res) => {
-//   const authorizationHeader = req.headers['authorization'];
-//   const username = req.body;
-  
-//   if (authorizationHeader.startsWith('Bearer ')) {
-//     const jwtToken = authorizationHeader.split(' ')[1];
-    
-//     verify(jwtToken)
-//       .then(user => {
-
-//         console.log(user); // delete
-//         let purgedUser = purgeUser(user);
-//         purgedUser.username = username;
-
-//         console.log(purgedUser); // delete
-//         return findOrCreate(purgedUser);
-//       })
-//       .then(returnedUser => {
-//         console.log(returnedUser) // delelte
-//         const {_id, given_name} = returnedUser;
-//         req.session.user = { _id, given_name};
-//         return res.json(returnedUser);
-//       })
-//       .catch(err => {
-//         // register new user
-//         console.log(err); // delete
-
-//         res.status(404).json(err);
-//       })
-
-//   } else {
-//     res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 
-//   }
-// })
-
 router.post('/api/v1/signup', (req, res) => {
-  // check if user has a session, which was setup by /api/signin.
-  // purgedUser was stored at req.session.user 
-  const user = req.session.user;
-  const { username } = req.body;
+  const authorizationHeader = req.headers['authorization'];
+  const username = req.body.username;
+  
+  if (authorizationHeader.startsWith('Bearer ')) {
+    const jwtToken = authorizationHeader.split(' ')[1];
+    
+    verify(jwtToken)
+      .then(user => {
 
-  user.username = username;
+        let purgedUser = purgeUser(user);
+        purgedUser.username = username;
 
-  findOrCreate(user)
-    .then(returnedUser => {
-      // replace with post-login session
-      const {_id, given_name} = returnedUser;
-      req.session.user = { _id, given_name};
+        return findOrCreate(purgedUser);
+      })
+      .then(returnedUser => {
+        const {_id, given_name} = returnedUser;
+        req.session.user = { _id, given_name};
+        
+        return res.json(returnedUser);
+      })
+      .catch(err => {
+        // register new user
+        console.log(err); // delete
 
-      return res.json(returnedUser);
-    })
-    .catch(err => {
-      console.log('/routes/auth.js: Line 30 \n ' + err);
-      res.status(404).json(err);
-    })
+        res.status(404).json(err);
+      })
+
+  } else {
+    res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 
+  }
 })
+
+// router.post('/api/v1/signup', (req, res) => {
+//   // check if user has a session, which was setup by /api/signin.
+//   // purgedUser was stored at req.session.user 
+//   const user = req.session.user;
+//   const { username } = req.body;
+
+//   user.username = username;
+
+//   findOrCreate(user)
+//     .then(returnedUser => {
+//       // replace with post-login session
+//       const {_id, given_name} = returnedUser;
+//       req.session.user = { _id, given_name};
+
+//       return res.json(returnedUser);
+//     })
+//     .catch(err => {
+//       console.log('/routes/auth.js: Line 30 \n ' + err);
+//       res.status(404).json(err);
+//     })
+// })
 
 module.exports = router;
