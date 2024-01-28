@@ -4,6 +4,7 @@ const userSchema = mongoose.Schema({
   given_name: String,
   family_name: String,
   picture: String,
+  username: String,
   provider: {
     name: String,
     providerId: String,
