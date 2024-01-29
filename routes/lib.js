@@ -37,11 +37,6 @@ function findUser(purgedUser) {
   return new Promise((resolve, reject) => {
     User.findOne({'provider.providerId': purgedUser.provider.providerId})
       .then(user => {
-        if (!user) {
-          // findOne doen't throw error instead return with a null object.
-          purgedUser.type = "UNREGISTERED";
-          resolve(purgedUser);
-        }
         resolve(user);
       })
       .catch(err => {
