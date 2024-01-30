@@ -10,6 +10,37 @@ router.use(express.json())
 
 // -----------------------------------------------------------------
 
+router.get('/api/v1/me', isAuthenticated, (req, res) => {
+  const userId = req.session.user._id;
+
+  if(!userId) {
+    // User has no session
+    // TODO: Manage this response at frontend.
+    
+    res.status(401).json({ message: 'User session not present'.toUpperCase()})
+  }
+
+  User.findOne({ '_id': userId })
+    .then(foundUser => res.json(foundUser))
+    .catch(err => res.status(401).json(err));
+})
+
+router.post('/api/v1/validate', (req, res) => {
+  const username = req.body.username;
+
+  User.findOne({ 'username': username })
+    .then(foundUser => handleFoundUser(foundUser))
+    .catch(err => res.status(401).json('DB Error'.toUpperCase))
+  
+  function handleFoundUser(foundUser) {
+    if(foundUser) {
+      res.json({ isValid: false, code: 'Username Invalid'})
+    } else {
+      // findOne returns empty doc when no doc matches.
+      res.json({ isValid: true, code: 'Username Valid'})
+    }
+  }
+})
 router.get('/api/signin', (req, res) => {
   const authorizationHeader = req.headers['authorization'];
   
@@ -51,21 +82,6 @@ router.get('/api/signin', (req, res) => {
   } else {
     res.status(401).json({ statusText: 'Incorrect Authorization header configuration'.toUpperCase()}); 
   }
-})
-
-router.get('/api/v1/me', isAuthenticated, (req, res) => {
-  const userId = req.session.user._id;
-
-  if(!userId) {
-    // User has no session
-    // TODO: Manage this response at frontend.
-    
-    res.status(401).json({ message: 'User session not present'.toUpperCase()})
-  }
-
-  User.findOne({ '_id': userId })
-    .then(foundUser => res.json(foundUser))
-    .catch(err => res.status(401).json(err));
 })
 
 router.post('/api/v1/signup', (req, res) => {
