@@ -47,11 +47,13 @@ function findUser(purgedUser) {
 
 function purgeUser(rawUser) {
   // WARNING: assuming its a google oauth
+  // WARNING: username won't be defined a unregistered user calls /api/v1/signin
 
   const purgedUser = {
     given_name: rawUser.given_name,
     family_name: rawUser.family_name,
     picture: rawUser.picture,
+    username: rawUser.username,
     provider: {
       name: 'google',
       providerId: rawUser.sub,
