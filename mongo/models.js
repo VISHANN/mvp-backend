@@ -11,6 +11,12 @@ const userSchema = mongoose.Schema({
     email: String,
     email_verified: Boolean,
   },
+  shelves: {
+    0: [ String ],
+    1: [ String ],
+    2: [ String ],
+    3: [ String ],
+  }
 });
 const User = mongoose.model('User', userSchema);
 

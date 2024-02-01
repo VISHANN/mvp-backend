@@ -97,7 +97,16 @@ router.post('/api/v1/signup', (req, res) => {
 
   user.username = username;
 
-  findOrCreate(purgeUser(user))
+  // temporary fix
+  const purgedUser = purgeUser(user);
+  purgedUser.shelves = {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+  }
+
+  findOrCreate(purgedUser)
     .then(returnedUser => {
       // replace with post-login session
       const {_id, given_name} = returnedUser;

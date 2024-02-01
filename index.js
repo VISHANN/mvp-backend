@@ -3,9 +3,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const authRoutes = require('./routes/auth');
 const app = express()
 
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user')
 // ====================================
 
 const clientPromise = mongoose.connect('mongodb+srv://svs_admin:vimal@cluster0.n8kbefi.mongodb.net/?retryWrites=true&w=majority',{
@@ -41,6 +42,7 @@ app.use(session({
 // =========================================================
 
 app.use(authRoutes);
+app.use(userRoutes);
 
 // =========================================================
 
