@@ -27,6 +27,11 @@ router.get('/api/v1/me', isAuthenticated, (req, res) => {
 
 router.post('/api/v1/validate', (req, res) => {
   const username = req.body.username;
+  
+  // if username is not between 3-20 char
+ if ( username.length < 3 || username.length > 20 ) {
+  res.json({ isValid: false, code: 'Username Invalid' })
+ }
 
   User.findOne({ 'username': username })
     .then(foundUser => handleFoundUser(foundUser))
@@ -34,10 +39,10 @@ router.post('/api/v1/validate', (req, res) => {
   
   function handleFoundUser(foundUser) {
     if(foundUser) {
-      res.json({ isValid: false, code: 'Username Invalid'})
+      res.json({ isValid: false, code: 'Username Invalid' })
     } else {
       // findOne returns empty doc when no doc matches.
-      res.json({ isValid: true, code: 'Username Valid'})
+      res.json({ isValid: true, code: 'Username Valid' })
     }
   }
 })
