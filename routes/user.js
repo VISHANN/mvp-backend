@@ -12,7 +12,6 @@ router.use(express.json())
 
 router.get('/api/v1/u/shelves', (req, res) => {
   const userId = req.session.user._id;
-  console.log(userId)
 
   User.findOne({ '_id': userId})
     .then(user => {
@@ -28,7 +27,7 @@ router.get('/api/v1/u/shelves', (req, res) => {
 
 router.put('/api/v1/u/shelves', (req, res) => {
   const userId = req.session.user._id;
-  const {targetShelfId, workId} = req.body;
+  const {targetShelfId, workId, currentShelfId} = req.body;
 
   if (targetShelfId !== undefined) {
     User.findOne({ '_id': userId})
@@ -36,7 +35,28 @@ router.put('/api/v1/u/shelves', (req, res) => {
         if (!user) {
           throw new Error('Unauthorized')
         }
+        
         user.shelves[targetShelfId].push(workId);
+        
+        user.save();
+        
+        res.json({ code: 'success'});
+      })
+      .catch(err => res.status(401).json({ code: 'unauthorized'}))
+  }
+
+  if (currentShelfId !== undefined) {
+    User.findOne({ '_id': userId})
+      .then(user => {
+        if (!user) {
+          throw new Error('Unauthorized')
+        }
+        
+        let currentShelf = user.shelves[currentShelfId];
+        currentShelf.splice(currentShelf.indexOf(workId), 1);
+        
+        user.save();
+        
         res.json({ code: 'success'});
       })
       .catch(err => res.status(401).json({ code: 'unauthorized'}))
