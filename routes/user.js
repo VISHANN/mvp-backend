@@ -31,7 +31,7 @@ router.put('/api/v1/u/shelves', (req, res) => {
 
   let updateUser = null;
 
-  if(targetShelfId && currentShelfId) {
+  if(targetShelfId !== undefined && currentShelfId !== undefined) {
     // update type is 'MOVE'
     
     updateUser = (user) => {
