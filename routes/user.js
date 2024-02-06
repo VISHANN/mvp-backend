@@ -10,7 +10,7 @@ router.use(express.json())
 
 // -----------------------------------------------------------------
 
-router.get('/api/v1/u/shelves', (req, res) => {
+router.get('/api/v1/u/shelves', isAuthenticated, (req, res) => {
   const userId = req.session.user._id;
 
   User.findOne({ '_id': userId})
@@ -25,7 +25,7 @@ router.get('/api/v1/u/shelves', (req, res) => {
     .catch(err => console.log(err));
 });
 
-router.put('/api/v1/u/shelves', (req, res) => {
+router.put('/api/v1/u/shelves', isAuthenticated, (req, res) => {
   const userId = req.session.user._id;
   const {targetShelfId, workId, currentShelfId} = req.body;
 
