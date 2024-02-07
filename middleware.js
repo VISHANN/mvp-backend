@@ -2,7 +2,8 @@ function isAuthenticated(req, res, next) {
   if (!req.session.user) {
     // User is un-authenticated and should be redirected to login
     return res.status(401).json({
-      text: "User session not found.".toUpperCase(),      
+      errCode: 'user_not_authenticated',
+      errText: "User is not authenticated. Please log in"
     })
   }
 
@@ -11,8 +12,8 @@ function isAuthenticated(req, res, next) {
     // with us, we have initialized a session. Here we check if session is 
     // of that type.
     return res.status(401).json({
-      code: 'user_signup_incomplete',
-      text: "User session active as the user tried logging in but didn't complete registration by username",
+      errCode: 'user_signup_incomplete',
+      errText: "User session active as the user tried logging in but didn't complete registration by username",
     })
   }
 

@@ -13,13 +13,6 @@ router.use(express.json())
 router.get('/api/v1/me', isAuthenticated, (req, res) => {
   const userId = req.session.user._id;
 
-  if(!userId) {
-    // User has no session
-    // TODO: Manage this response at frontend.
-    
-    res.status(401).json({ message: 'User session not present'.toUpperCase()})
-  }
-
   User.findOne({ '_id': userId })
     .then(foundUser => res.json(foundUser))
     .catch(err => res.status(401).json(err));
@@ -118,6 +111,23 @@ router.post('/api/v1/signup', (req, res) => {
       console.log('/routes/auth.js: Line 30 \n ' + err);
       res.status(404).json(err);
     })
+});
+
+router.post('/api/v1/signout', isAuthenticated, (req, res) => {
+
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(401).json({
+        code: 'session_not_destroyed',
+        text: 'We could not log you out. Please try logging out again'
+      });
+    }
+
+    res.json({
+      code: 'logout_successful',
+      text: 'You have successfully logged out. We will miss you.'
+    })
+  })
 });
 
 // router.post('/api/v1/signup', (req, res) => {

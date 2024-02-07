@@ -30,7 +30,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: { 
     secure: false, // This will only work if you have https enabled!
-    maxAge: 6000000, // 1 min
+    maxAge: 86400000, // 24 hours
     httpOnly: true,
   },
   store: MongoStore.create({
