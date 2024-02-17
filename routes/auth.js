@@ -118,7 +118,7 @@ router.post('/api/v1/signout', isAuthenticated, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       res.status(401).json({
-        code: 'session_not_destroyed',
+        code: 'logout_unsuccessful',
         text: 'We could not log you out. Please try logging out again'
       });
     }

@@ -6,7 +6,8 @@ const MongoStore = require('connect-mongo');
 const app = express()
 
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user')
+const userRoutes = require('./routes/user');
+const reviewRoutes = require('./routes/review');
 // ====================================
 
 const clientPromise = mongoose.connect('mongodb+srv://svs_admin:vimal@cluster0.n8kbefi.mongodb.net/?retryWrites=true&w=majority',{
@@ -43,6 +44,7 @@ app.use(session({
 
 app.use(authRoutes);
 app.use(userRoutes);
+app.use('/api/v1', reviewRoutes)
 
 // =========================================================
 
