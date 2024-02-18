@@ -1,6 +1,21 @@
 const express = require('express'),
   router =  express.Router();
 
+const rating = [
+  {
+    id: '0',
+    name: 'Not for me'
+  },
+  {
+    id: '1',
+    name: 'I like it'
+  },
+  {
+    id: '2',
+    name: 'Love this!'
+  },
+]
+
 // NOTE: the moods ids are not sorted deliberately.
 const moods = [
   {name: 'adventurous', id: '0'},
@@ -35,7 +50,7 @@ const pace = [
 
 router.get('/review/props', (req, res) => {
   res.json({ 
-    // rating,
+    rating,
     moods,
     pace,
   })
