@@ -1,3 +1,6 @@
+const { Review } = require("../mongo/models"),
+  { isAuthenticated } = require("../middleware");
+
 const express = require("express"),
   router = express.Router();
 
@@ -58,14 +61,41 @@ router.get("/review/props", (req, res) => {
     pace,
   });
 });
-router.post("/review/:id", (req, res) => {
-  console.log(req.params.id);
-  console.log(req.body);
+router.post("/review/:id", isAuthenticated, (req, res) => {
+  const workId = req.params.id,
+    authorId = req.session.user._id;
 
   /*
-    req.body is review object which would be in the shape
+    req.body is review object with structure:
+      { 
+        rating: StringRatingId,
+        moods: [ StringMoodId ],
+        text: String,
+        pace: StringPaceId,
+      }
   */
-  res.json(req.body);
+
+  const review = req.body;
+
+  review.workId = workId;
+  review.authorId = authorId;
+
+  if (review.rating === null) {
+    return res.status(422).json({
+      code: "bad_form_data",
+      text: "Bad form data sent. It either had wrong formatting or some required data missing.",
+    });
+  }
+
+  Review.create(review)
+    .then((doc) => res.json({ code: "200", text: "Review saved successfully" }))
+    .catch((err) => {
+      console.error(err);
+      res.json({
+        code: "db_write_unsuccessful",
+        text: "Could not save your review due to some server error. Please try again.",
+      });
+    });
 });
 
 module.exports = router;

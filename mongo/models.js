@@ -22,9 +22,18 @@ const User = mongoose.model("User", userSchema);
 
 const reviewSchema = mongoose.Schema(
   {
-    workId: mongoose.Schema.Types.ObjectId,
-    author: mongoose.Schema.Types.ObjectId,
-    rating: String,
+    workId: {
+      type: String,
+      required: true,
+    },
+    authorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    rating: {
+      type: String,
+      required: true,
+    },
     text: String,
     moods: [String],
     pace: String,
