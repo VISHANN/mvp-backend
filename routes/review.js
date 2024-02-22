@@ -1,4 +1,4 @@
-const { Review } = require("../mongo/models"),
+const { Review, User } = require("../mongo/models"),
   { isAuthenticated } = require("../middleware");
 
 const express = require("express"),
@@ -88,7 +88,23 @@ router.post("/review/:id", isAuthenticated, (req, res) => {
   }
 
   Review.create(review)
-    .then((doc) => res.json({ code: "200", text: "Review saved successfully" }))
+    .then(async (review) => {
+      // add the work to user
+      let user = await User.findOne({ _id: authorId });
+
+      // push reviewId to user.activity.reviews
+      user.activity.reviews.push(review._id);
+
+      // add work to user's have read shelves
+      user.shelves[2].push(workId);
+
+      await user.save();
+
+      return res.json({
+        code: "db_write_successful",
+        text: "Review saved successfully",
+      });
+    })
     .catch((err) => {
       console.error(err);
       res.json({

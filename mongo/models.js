@@ -17,6 +17,14 @@ const userSchema = mongoose.Schema({
     2: [String],
     3: [String],
   },
+  activity: {
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
+  },
 });
 const User = mongoose.model("User", userSchema);
 
