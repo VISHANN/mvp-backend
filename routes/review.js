@@ -1,4 +1,4 @@
-const { Review, User } = require("../mongo/models"),
+const { Review, User, Work } = require("../mongo/models"),
   { isAuthenticated } = require("../middleware");
 
 const express = require("express"),
@@ -89,6 +89,22 @@ router.post("/review/:id", isAuthenticated, (req, res) => {
 
   Review.create(review)
     .then(async (review) => {
+      // push reviewId to work.reviews
+      await Work.findOneAndUpdate(
+        {
+          identifier: {
+            olin: workId,
+          },
+        },
+        {
+          $push: { reviews: review._id },
+        },
+        {
+          upsert: true,
+          returnOriginal: false,
+        }
+      );
+
       // add the work to user
       let user = await User.findOne({ _id: authorId });
 

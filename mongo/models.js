@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose"),
+  Schema = mongoose.Schema;
 
 const userSchema = mongoose.Schema({
   given_name: String,
@@ -55,7 +56,22 @@ const reviewSchema = mongoose.Schema(
 );
 const Review = mongoose.model("Review", reviewSchema);
 
+const workSchema = Schema({
+  identifier: {
+    olin: String,
+  },
+  reviews: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
+});
+
+const Work = mongoose.model("Work", workSchema);
+
 module.exports = {
   User: User,
   Review,
+  Work,
 };
