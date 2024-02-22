@@ -61,7 +61,7 @@ router.get("/review/props", (req, res) => {
     pace,
   });
 });
-router.post("/review/:id", isAuthenticated, (req, res) => {
+router.post("/review/:id", isAuthenticated, async (req, res) => {
   const workId = req.params.id,
     authorId = req.session.user._id;
 
@@ -85,6 +85,20 @@ router.post("/review/:id", isAuthenticated, (req, res) => {
       code: "bad_form_data",
       text: "Bad form data sent. It either had wrong formatting or some required data missing.",
     });
+  }
+
+  const user = await User.findOne({ _id: authorId }).populate(
+    "activity.reviews"
+  );
+
+  // check if user has already reviewed the work.
+  for (let review of user.activity.reviews) {
+    if (review.workId === workId) {
+      return res.status(400).json({
+        code: "bad_request",
+        text: "User has already reviewed this work.",
+      });
+    }
   }
 
   Review.create(review)
