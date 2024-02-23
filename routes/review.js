@@ -24,21 +24,64 @@ const rating = [
 
 // NOTE: the moods ids are not sorted deliberately.
 const moods = [
-  { name: "adventurous", id: "0" },
-  { name: "challenging", id: "1" },
-  { name: "dark", id: "12" },
-  { name: "emotional", id: "3" },
-  { name: "funny", id: "4" },
-  { name: "hopeful", id: "5" },
-  { name: "informative", id: "6" },
-  { name: "inspiring", id: "7" },
-  { name: "lighthearted", id: "8" },
-  { name: "mysterious", id: "9" },
-  { name: "reflective", id: "10" },
-  { name: "relaxing", id: "11" },
-  { name: "sad", id: "2" },
-  { name: "tense", id: "13" },
+  {
+    name: "adventurous",
+    id: "0",
+  },
+  {
+    name: "challenging",
+    id: "1",
+  },
+  {
+    name: "dark",
+    id: "12",
+  },
+  {
+    name: "emotional",
+    id: "3",
+  },
+  {
+    name: "funny",
+    id: "4",
+  },
+  {
+    name: "hopeful",
+    id: "5",
+  },
+  {
+    name: "informative",
+    id: "6",
+  },
+  {
+    name: "inspiring",
+    id: "7",
+  },
+  {
+    name: "lighthearted",
+    id: "8",
+  },
+  {
+    name: "mysterious",
+    id: "9",
+  },
+  {
+    name: "reflective",
+    id: "10",
+  },
+  {
+    name: "relaxing",
+    id: "11",
+  },
+  {
+    name: "sad",
+    id: "2",
+  },
+  {
+    name: "tense",
+    id: "13",
+  },
 ];
+
 const pace = [
   {
     id: "0",
@@ -61,6 +104,7 @@ router.get("/review/props", (req, res) => {
     pace,
   });
 });
+
 router.post("/review/:id", isAuthenticated, async (req, res) => {
   const workId = req.params.id,
     authorId = req.session.user._id;
@@ -101,6 +145,21 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
     }
   }
 
+  // find the book in shelves and move it to "have read"
+  for (let [shelfId, shelf] of Object.entries(user.shelves)) {
+    if (shelf.includes(workId)) {
+      // if found inside "have read". User has already done our operation
+      if (shelfId === 2) break;
+
+      shelf.splice(shelf.indexOf(workId), 1);
+      user.shelves[2].push(workId);
+
+      // calling user.save() inside resolve for Review.create() so that
+      // user only changes if a review has successfully been created.
+      break;
+    }
+  }
+
   Review.create(review)
     .then(async (review) => {
       // push reviewId to work.reviews
@@ -119,14 +178,8 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
         }
       );
 
-      // add the work to user
-      let user = await User.findOne({ _id: authorId });
-
       // push reviewId to user.activity.reviews
       user.activity.reviews.push(review._id);
-
-      // add work to user's have read shelves
-      user.shelves[2].push(workId);
 
       await user.save();
 
@@ -136,7 +189,6 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
       });
     })
     .catch((err) => {
-      console.error(err);
       res.json({
         code: "db_write_unsuccessful",
         text: "Could not save your review due to some server error. Please try again.",
