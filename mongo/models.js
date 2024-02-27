@@ -60,6 +60,17 @@ const workSchema = Schema({
   identifier: {
     olin: String,
   },
+  title: {
+    type: String,
+    required: true,
+  },
+  authors: [
+    {
+      olin: String,
+      given_name: String,
+    },
+  ],
+  coverId: String,
   reviews: [
     {
       type: Schema.Types.ObjectId,

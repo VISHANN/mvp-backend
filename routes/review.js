@@ -105,6 +105,15 @@ router.get("/review/props", (req, res) => {
   });
 });
 
+router.get("/review/:id", isAuthenticated, (req, res) => {
+  const reviewId = req.params.id;
+
+  Review.findOne({ _id: reviewId })
+    // .populate("workId")
+    .then((review) => res.json(review))
+    .catch((err) => console.log(err));
+});
+
 router.post("/review/:id", isAuthenticated, async (req, res) => {
   const workId = req.params.id,
     authorId = req.session.user._id;
@@ -160,14 +169,19 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
     }
   }
 
+  const { title, authors, coverId } = review.work;
+
   Review.create(review)
     .then(async (review) => {
       // push reviewId to work.reviews
-      await Work.findOneAndUpdate(
+      const work = await Work.findOneAndUpdate(
         {
           identifier: {
             olin: workId,
           },
+          title,
+          authors,
+          coverId,
         },
         {
           $push: { reviews: review._id },
@@ -177,6 +191,8 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
           returnOriginal: false,
         }
       );
+
+      console.log(work);
 
       // push reviewId to user.activity.reviews
       user.activity.reviews.push(review._id);
@@ -194,6 +210,10 @@ router.post("/review/:id", isAuthenticated, async (req, res) => {
         text: "Could not save your review due to some server error. Please try again.",
       });
     });
+});
+
+router.put("/review/:id", isAuthenticated, (req, res) => {
+  res.json({ text: "edit route for review/:id" });
 });
 
 module.exports = router;
