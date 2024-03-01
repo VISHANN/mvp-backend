@@ -31,12 +31,14 @@ const User = mongoose.model("User", userSchema);
 
 const reviewSchema = mongoose.Schema(
   {
-    workId: {
-      type: String,
+    work: {
+      type: Schema.Types.ObjectId,
+      ref: "Work",
       required: true,
     },
-    authorId: {
+    author: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     rating: {
@@ -57,8 +59,9 @@ const reviewSchema = mongoose.Schema(
 const Review = mongoose.model("Review", reviewSchema);
 
 const workSchema = Schema({
-  identifier: {
-    olin: String,
+  olid: {
+    type: String,
+    required: true,
   },
   title: {
     type: String,
@@ -70,7 +73,7 @@ const workSchema = Schema({
       given_name: String,
     },
   ],
-  coverId: String,
+  cover: String,
   reviews: [
     {
       type: Schema.Types.ObjectId,

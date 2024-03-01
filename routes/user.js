@@ -98,9 +98,13 @@ router.get("/api/v1/u/activity/reviews", isAuthenticated, (req, res) => {
   const userId = req.session.user._id;
 
   User.findOne({ _id: userId })
-    .populate("activity.reviews")
+    .populate({
+      path: "activity.reviews",
+      populate: {
+        path: "work",
+      },
+    })
     .then((user) => {
-      console.log(user.activity.reviews);
       res.json(user.activity.reviews);
     })
     .catch((err) => {

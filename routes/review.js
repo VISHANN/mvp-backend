@@ -1,5 +1,11 @@
 const { Review, User, Work } = require("../mongo/models"),
-  { isAuthenticated } = require("../middleware");
+  { isAuthenticated } = require("../middleware"),
+  {
+    validateFormData,
+    getReviewByWorkOLID,
+    findWorkAndUpdateShelves,
+  } = require("./lib/review"),
+  { getShelfId, updateShelves } = require("./lib");
 
 const express = require("express"),
   router = express.Router();
@@ -114,102 +120,105 @@ router.get("/review/:id", isAuthenticated, (req, res) => {
     .catch((err) => console.log(err));
 });
 
-router.post("/review/:id", isAuthenticated, async (req, res) => {
-  const workId = req.params.id,
+router.post("/review", isAuthenticated, async (req, res) => {
+  const workId = req.body.work.id,
     authorId = req.session.user._id;
+  const { review, work } = req.body;
 
   /*
     req.body is review object with structure:
       { 
-        rating: StringRatingId,
-        moods: [ StringMoodId ],
-        text: String,
-        pace: StringPaceId,
+        review: {
+          rating: StringRatingId,
+          moods: [ StringMoodId ],
+          text: String,
+          pace: StringPaceId,
+        }
+        work: {
+          workId,
+          title,
+          authors,
+          coverId
+        }
       }
   */
 
-  const review = req.body;
-
-  review.workId = workId;
-  review.authorId = authorId;
-
-  if (review.rating === null) {
+  // Return bad_form_data when rating is missing from review submitted
+  if (!validateFormData({ name: "review", data: review })) {
     return res.status(422).json({
       code: "bad_form_data",
       text: "Bad form data sent. It either had wrong formatting or some required data missing.",
     });
   }
 
-  const user = await User.findOne({ _id: authorId }).populate(
-    "activity.reviews"
-  );
+  try {
+    // Get logged in user from database
+    const user = await User.findOne({ _id: authorId });
+    const populatedUser = await user.populate({
+      path: "activity.reviews",
+      populate: {
+        path: "work",
+      },
+    });
 
-  // check if user has already reviewed the work.
-  for (let review of user.activity.reviews) {
-    if (review.workId === workId) {
-      return res.status(400).json({
-        code: "bad_request",
+    // get user's review for relevant workId
+    const userReview = await getReviewByWorkOLID(
+      populatedUser.activity.reviews,
+      workId
+    );
+
+    // if user has already reviewed the work, it is an invalid_request
+    if (userReview) {
+      res.status(400).json({
+        code: "invalid_request",
         text: "User has already reviewed this work.",
       });
     }
-  }
 
-  // find the book in shelves and move it to "have read"
-  for (let [shelfId, shelf] of Object.entries(user.shelves)) {
-    if (shelf.includes(workId)) {
-      // if found inside "have read". User has already done our operation
-      if (shelfId === 2) break;
+    // Shelves will not be updated untill user.save() is called after
+    // successful creation of review
+    const shelves = findWorkAndUpdateShelves(user.shelves, workId, 2);
 
-      shelf.splice(shelf.indexOf(workId), 1);
-      user.shelves[2].push(workId);
+    const { id, title, authors, coverId } = work;
 
-      // calling user.save() inside resolve for Review.create() so that
-      // user only changes if a review has successfully been created.
-      break;
-    }
-  }
+    const foundWork = await Work.findOneAndUpdate(
+      {
+        olid: id,
+        title,
+        authors,
+        cover: coverId,
+      },
+      {
+        $push: { reviews: review._id },
+      },
+      {
+        upsert: true,
+        returnOriginal: false,
+      }
+    );
 
-  const { title, authors, coverId } = review.work;
+    review.work = foundWork._id;
+    review.author = authorId;
 
-  Review.create(review)
-    .then(async (review) => {
-      // push reviewId to work.reviews
-      const work = await Work.findOneAndUpdate(
-        {
-          identifier: {
-            olin: workId,
-          },
-          title,
-          authors,
-          coverId,
-        },
-        {
-          $push: { reviews: review._id },
-        },
-        {
-          upsert: true,
-          returnOriginal: false,
-        }
-      );
+    const createdReview = await Review.create(review);
 
-      console.log(work);
+    // push reviewId to user.activity.reviews
+    user.activity.reviews.push(createdReview._id);
 
-      // push reviewId to user.activity.reviews
-      user.activity.reviews.push(review._id);
+    await createdReview.save();
+    await user.save();
 
-      await user.save();
-
-      return res.json({
-        code: "db_write_successful",
-        text: "Review saved successfully",
-      });
-    })
-    .catch((err) => {
-      res.json({
-        code: "db_write_unsuccessful",
-        text: "Could not save your review due to some server error. Please try again.",
-      });
+    res.json({
+      code: "db_write_successful",
+      text: "Review saved successfully",
     });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      code: "db_write_unsuccessful",
+      text: "Could not save your review due to some server error. Please try again.",
+    });
+  }
 });
 
 router.put("/review/:id", isAuthenticated, (req, res) => {
