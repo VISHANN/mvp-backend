@@ -94,14 +94,18 @@ router.put("/api/v1/u/shelves", isAuthenticated, (req, res) => {
   }
 });
 
-router.get("/api/v1/u/activity/reviews", isAuthenticated, (req, res) => {
+router.get("/api/v1/me/activity/reviews", isAuthenticated, (req, res) => {
   const userId = req.session.user._id;
+
+  // Populate user's reviews under activity first and
+  // then populate review's work but include olid and exclude _id fields from work.
 
   User.findOne({ _id: userId })
     .populate({
       path: "activity.reviews",
       populate: {
         path: "work",
+        select: "olid -_id",
       },
     })
     .then((user) => {
