@@ -34,12 +34,10 @@ const reviewSchema = mongoose.Schema(
     work: {
       type: Schema.Types.ObjectId,
       ref: "Work",
-      required: true,
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     rating: {
       type: String,
@@ -69,7 +67,7 @@ const workSchema = Schema({
   },
   authors: [
     {
-      olin: String,
+      olid: String,
       given_name: String,
     },
   ],

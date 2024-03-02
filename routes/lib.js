@@ -1,5 +1,5 @@
 const { OAuth2Client } = require("google-auth-library"),
-  { User } = require("../mongo/models");
+  { User, Work } = require("../mongo/models");
 
 const GoogleClient = new OAuth2Client();
 
@@ -108,9 +108,37 @@ function getShelfId(workId, shelves) {
   // return -1 if work not found in any shelf
   return -1;
 }
+async function findOrCreateWork(work) {
+  let { id, title, authors, cover } = work;
+
+  // Format authors to match workSchema
+  authors = authors.map((author) => {
+    return {
+      olid: author.key,
+      given_name: author.given_name,
+    };
+  });
+
+  const foundWork = await Work.findOneAndUpdate(
+    {
+      olid: id,
+      title,
+      authors,
+      cover,
+    },
+    {},
+    {
+      upsert: true,
+      returnOriginal: false,
+    }
+  );
+
+  return foundWork;
+}
 
 module.exports = {
   findOrCreate,
+  findOrCreateWork,
   purgeUser,
   verify,
   findUser,

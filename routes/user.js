@@ -1,6 +1,8 @@
+const { default: mongoose } = require("mongoose");
+
 const express = require("express"),
   router = express.Router(),
-  { User } = require("../mongo/models"),
+  { User, Review } = require("../mongo/models"),
   { isAuthenticated } = require("../middleware");
 
 // -----------------------------------------------------------------
@@ -119,6 +121,17 @@ router.get("/api/v1/me/activity/reviews", isAuthenticated, (req, res) => {
     });
 });
 
+router.get("/api/v1/me/review/:id", isAuthenticated, (req, res) => {
+  const reviewId = req.params.id,
+    userId = req.session.user._id;
+
+  Review.findOne({ _id: reviewId })
+    .populate("work")
+    .then((review) => {
+      if (review.author.equals(userId)) return res.json(review);
+    })
+    .catch((err) => console.log(err));
+});
 // -----------------------------------------------------------------
 
 module.exports = router;

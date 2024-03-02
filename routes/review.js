@@ -5,7 +5,7 @@ const { Review, User, Work } = require("../mongo/models"),
     getReviewByWorkOLID,
     findWorkAndUpdateShelves,
   } = require("./lib/review"),
-  { getShelfId, updateShelves } = require("./lib");
+  { getShelfId, updateShelves, findOrCreateWork } = require("./lib");
 
 const express = require("express"),
   router = express.Router();
@@ -111,15 +111,6 @@ router.get("/review/props", (req, res) => {
   });
 });
 
-router.get("/review/:id", isAuthenticated, (req, res) => {
-  const reviewId = req.params.id;
-
-  Review.findOne({ _id: reviewId })
-    // .populate("workId")
-    .then((review) => res.json(review))
-    .catch((err) => console.log(err));
-});
-
 router.post("/review", isAuthenticated, async (req, res) => {
   const workId = req.body.work.id,
     authorId = req.session.user._id;
@@ -135,10 +126,10 @@ router.post("/review", isAuthenticated, async (req, res) => {
           pace: StringPaceId,
         }
         work: {
-          workId,
+          id,
           title,
           authors,
-          coverId
+          cover
         }
       }
   */
@@ -179,33 +170,24 @@ router.post("/review", isAuthenticated, async (req, res) => {
     // successful creation of review
     const shelves = findWorkAndUpdateShelves(user.shelves, workId, 2);
 
-    const { id, title, authors, coverId } = work;
+    // Work would exist if someone had reviewed it previously
+    // If not create one.
+    const foundWork = await findOrCreateWork(work);
 
-    const foundWork = await Work.findOneAndUpdate(
-      {
-        olid: id,
-        title,
-        authors,
-        cover: coverId,
-      },
-      {
-        $push: { reviews: review._id },
-      },
-      {
-        upsert: true,
-        returnOriginal: false,
-      }
-    );
-
+    // Add work _id and user _id before adding review to db
     review.work = foundWork._id;
     review.author = authorId;
 
+    // Create Review
     const createdReview = await Review.create(review);
+
+    // add review to work.reviews for the related work
+    foundWork.reviews.push(createdReview._id);
 
     // push reviewId to user.activity.reviews
     user.activity.reviews.push(createdReview._id);
 
-    await createdReview.save();
+    await foundWork.save();
     await user.save();
 
     res.json({
