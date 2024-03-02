@@ -119,19 +119,20 @@ async function findOrCreateWork(work) {
     };
   });
 
-  const foundWork = await Work.findOneAndUpdate(
-    {
-      olid: id,
-      title,
-      authors,
-      cover,
-    },
-    {},
-    {
-      upsert: true,
-      returnOriginal: false,
-    }
-  );
+  let foundWork = await Work.findOne({ olid: id, title });
+
+  if (foundWork) {
+    console.log(foundWork);
+    console.log(authors);
+    return foundWork;
+  }
+
+  foundWork = await Work.create({
+    olid: id,
+    title,
+    authors,
+    cover,
+  });
 
   return foundWork;
 }

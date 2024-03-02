@@ -67,6 +67,7 @@ const workSchema = Schema({
   },
   authors: [
     {
+      _id: false,
       olid: String,
       given_name: String,
     },
