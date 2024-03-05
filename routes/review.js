@@ -204,6 +204,18 @@ router.post("/review", isAuthenticated, async (req, res) => {
 });
 
 router.put("/review/:id", isAuthenticated, (req, res) => {
+  Review.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      author: req.session.user._id,
+    },
+    req.body.review,
+    {
+      returnOriginal: false,
+    }
+  ).then((review) => {
+    console.log(review);
+  });
   res.json({ text: "edit route for review/:id" });
 });
 
