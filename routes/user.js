@@ -103,15 +103,22 @@ router.get("/api/v1/me/activity/reviews", isAuthenticated, (req, res) => {
   User.findOne({ _id: userId })
     .populate({
       path: "activity.reviews",
-      populate: {
-        path: "work",
-        select: "olid -_id",
-      },
+      populate: [
+        {
+          path: "work",
+          select: "olid -_id",
+        },
+        {
+          path: "author",
+          select: "username given_name picture -_id",
+        },
+      ],
     })
     .then((user) => {
       res.json(user.activity.reviews);
     })
     .catch((err) => {
+      console.log(err);
       res.status(401).json({
         code: "db_read_unsuccessful",
         text: "Could not read from database.",
