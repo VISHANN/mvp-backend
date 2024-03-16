@@ -213,10 +213,20 @@ router.put("/review/:id", isAuthenticated, (req, res) => {
     {
       returnOriginal: false,
     }
-  ).then((review) => {
-    console.log(review);
-  });
-  res.json({ text: "edit route for review/:id" });
+  )
+    .then((review) => {
+      res.json({
+        code: "db_write_successful",
+        text: "Review edited successfully",
+      });
+    })
+    .catch((err) => {
+      console.log("Error: /review/:id", err);
+      res.json({
+        code: "db_write_unsuccessful",
+        text: "Could not save your review due to some server error. Please try again.",
+      });
+    });
 });
 
 module.exports = router;

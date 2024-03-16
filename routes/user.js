@@ -1,5 +1,3 @@
-const { default: mongoose } = require("mongoose");
-
 const express = require("express"),
   router = express.Router(),
   { User, Review } = require("../mongo/models"),
