@@ -50,7 +50,7 @@ const reviewSchema = mongoose.Schema(
   {
     timestamps: {
       createdAt: true,
-      updatedAt: false,
+      updatedAt: true,
     },
   }
 );
