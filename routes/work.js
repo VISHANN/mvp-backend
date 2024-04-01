@@ -17,13 +17,13 @@ router.get("/work/olid/:olid/reviews", async (req, res) => {
 
   if (!work) {
     // No such work exists, means no reviews exist for work
-    res.json({
+    return res.status(404).json({
       code: "work_not_found",
       text: "This work has not been created yet. Thus has not been reviewed yet.",
     });
   }
 
-  res.json(work.reviews);
+  return res.json(work.reviews);
 });
 
 module.exports = router;
