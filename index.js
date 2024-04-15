@@ -9,6 +9,7 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const reviewRoutes = require("./routes/review");
 const workRoutes = require("./routes/work");
+const accountRoutes = require("./routes/account");
 // ====================================
 
 const clientPromise = mongoose
@@ -54,6 +55,7 @@ app.use(authRoutes);
 app.use(userRoutes);
 app.use("/api/v1", reviewRoutes);
 app.use("/api/v1", workRoutes);
+app.use("/api/v1/account", accountRoutes);
 
 // =========================================================
 
