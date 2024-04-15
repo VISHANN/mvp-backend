@@ -17,7 +17,10 @@ router.get("/edit", isAuthenticated, (req, res) => {
         profile: {
           username: user.username,
           given_name: user.given_name,
+          family_name: user.family_name,
           picture: user.picture,
+          bio: user.profile.bio,
+          gender: user.profile.gender,
         },
       });
     })

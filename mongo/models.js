@@ -12,6 +12,16 @@ const userSchema = mongoose.Schema({
     email: String,
     email_verified: Boolean,
   },
+  profile: {
+    bio: {
+      type: String,
+      default: "",
+    },
+    gender: {
+      type: String,
+      default: "0",
+    },
+  },
   shelves: {
     0: [String],
     1: [String],
