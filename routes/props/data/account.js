@@ -1,4 +1,7 @@
 const profile = {
+  bio: {
+    MAX_LENGTH: 150,
+  },
   gender: [
     {
       id: "0",

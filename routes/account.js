@@ -73,7 +73,7 @@ router.put("/edit", isAuthenticated, (req, res) => {
       family_name,
       profile: {
         bio,
-        gender: 0,
+        gender,
       },
     },
     {
