@@ -5,6 +5,8 @@ const { User } = require("../mongo/models");
 
 // --------------------------------------------------------------------------------
 
+const accountProps = require("./props/data/account");
+
 // --------------------------------------------------------------------------------
 
 router.get("/edit", isAuthenticated, (req, res) => {
@@ -52,6 +54,18 @@ router.put("/edit", isAuthenticated, (req, res) => {
   // }
 
   const { given_name, family_name, bio, gender } = req.body.profile;
+
+  // form data validation
+  if (
+    bio.length > 150 ||
+    !accountProps.profile.gender.map((gender) => gender.id).includes(gender)
+  ) {
+    return res.status(422).json({
+      code: "bad_form_data",
+      text: "Please re-check form fields",
+    });
+  }
+
   User.findOneAndUpdate(
     { _id: req.session.user._id },
     {
@@ -59,7 +73,7 @@ router.put("/edit", isAuthenticated, (req, res) => {
       family_name,
       profile: {
         bio,
-        gender,
+        gender: 0,
       },
     },
     {
