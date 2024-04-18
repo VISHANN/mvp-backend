@@ -7,6 +7,8 @@ const { Review, User, Work } = require("../mongo/models"),
   } = require("./lib/review"),
   { getShelfId, updateShelves, findOrCreateWork } = require("./lib");
 
+const errors = require("../codes/error.json");
+
 const express = require("express"),
   router = express.Router();
 
@@ -137,7 +139,7 @@ router.post("/review", isAuthenticated, async (req, res) => {
   // Return bad_form_data when rating is missing from review submitted
   if (!validateFormData({ name: "review", data: review })) {
     return res.status(422).json({
-      code: "bad_form_data",
+      code: errors.bad_form_data,
       text: "Bad form data sent. It either had wrong formatting or some required data missing.",
     });
   }
@@ -161,7 +163,7 @@ router.post("/review", isAuthenticated, async (req, res) => {
     // if user has already reviewed the work, it is an invalid_request
     if (userReview) {
       res.status(400).json({
-        code: "invalid_request",
+        code: errors.invalid_request,
         text: "User has already reviewed this work.",
       });
     }
@@ -191,13 +193,13 @@ router.post("/review", isAuthenticated, async (req, res) => {
     await user.save();
 
     res.json({
-      code: "db_write_successful",
+      code: errors.db_write_successful,
       text: "Review saved successfully",
     });
   } catch (err) {
     console.log(err);
     res.json({
-      code: "db_write_unsuccessful",
+      code: errors.db_write_unsuccessful,
       text: "Could not save your review due to some server error. Please try again.",
     });
   }
@@ -216,14 +218,14 @@ router.put("/review/:id", isAuthenticated, (req, res) => {
   )
     .then((review) => {
       res.json({
-        code: "db_write_successful",
+        code: errors.db_write_successful,
         text: "Review edited successfully",
       });
     })
     .catch((err) => {
       console.log("Error: /review/:id", err);
       res.json({
-        code: "db_write_unsuccessful",
+        code: errors.db_write_unsuccessful,
         text: "Could not save your review due to some server error. Please try again.",
       });
     });

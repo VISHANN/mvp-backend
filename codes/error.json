@@ -1,0 +1,18 @@
+{
+  "bad_authorization_token": "bad_authorization_token",
+  "bad_form_data": "bad_form_data",
+
+  "invalid_request":"invalid_request",
+
+  "user_account_deleted": "user_account_deleted",
+  "user_not_registered": "user_not_registered",
+  "logout_unsuccessful":"logout_unsuccessful",
+  "logout_successful":"logout_successful",
+  
+
+  "db_write_unsuccessful":"db_write_unsuccessful",
+  "db_write_successful": "db_write_successful",
+  "db_read_unsuccessful":  "db_read_unsuccessful",
+
+  "work_not_found": "work_not_found"
+}

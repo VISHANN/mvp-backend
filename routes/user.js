@@ -3,6 +3,8 @@ const express = require("express"),
   { User, Review } = require("../mongo/models"),
   { isAuthenticated } = require("../middleware");
 
+const errors = require("../codes/error.json");
+
 // -----------------------------------------------------------------
 
 router.use(express.json());
@@ -15,8 +17,10 @@ router.get("/api/v1/u/shelves", isAuthenticated, (req, res) => {
   User.findOne({ _id: userId })
     .then((user) => {
       if (!user) {
-        console.log("Err: No user found");
-        res.status(404).json({ code: "user_not_found" });
+        res.status(404).json({
+          code: errors.user_account_deleted,
+          text: "You recently deleted your account",
+        });
       } else {
         res.json(user.shelves);
       }
@@ -120,7 +124,7 @@ router.get("/api/v1/me/activity/reviews", isAuthenticated, (req, res) => {
     .catch((err) => {
       console.log(err);
       res.status(401).json({
-        code: "db_read_unsuccessful",
+        code: errors.db_read_unsuccessful,
         text: "Could not read from database.",
       });
     });

@@ -6,6 +6,7 @@ const { User } = require("../mongo/models");
 // --------------------------------------------------------------------------------
 
 const accountProps = require("./props/data/account");
+const errors = require("../codes/error.json");
 
 // --------------------------------------------------------------------------------
 
@@ -14,8 +15,8 @@ router.get("/edit", isAuthenticated, (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(404).json({
-          code: "user_not_found",
-          text: "Could not find this user in database",
+          code: errors.user_account_deleted,
+          text: "You recently deleted your account",
         });
       }
 
@@ -32,7 +33,7 @@ router.get("/edit", isAuthenticated, (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({
-        code: "db_read_unsuccessful",
+        code: errors.db_read_unsuccessful,
         text: "Error occurred while trying to read user from database",
       });
     });
@@ -61,7 +62,7 @@ router.put("/edit", isAuthenticated, (req, res) => {
     !accountProps.profile.gender.map((gender) => gender.id).includes(gender)
   ) {
     return res.status(422).json({
-      code: "bad_form_data",
+      code: errors.bad_form_data,
       text: "Please re-check form fields",
     });
   }
@@ -83,7 +84,7 @@ router.put("/edit", isAuthenticated, (req, res) => {
     .then((updatedUser) => {
       if (!updatedUser) {
         res.status(451).json({
-          code: "user_account_deleted",
+          code: errors.user_account_deleted,
           text: "The user account associated with this session has been deleted.",
         });
       }
@@ -93,7 +94,7 @@ router.put("/edit", isAuthenticated, (req, res) => {
     })
     .catch((err) =>
       res.status(500).json({
-        code: "db_write_unsuccessful",
+        code: errors.db_write_unsuccessful,
         text: "Error occurred while trying to update user to database",
       })
     );

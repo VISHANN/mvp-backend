@@ -2,7 +2,8 @@ const express = require("express"),
   router = express.Router(),
   { User } = require("../mongo/models"),
   { isAuthenticated } = require("../middleware"),
-  { findOrCreate, purgeUser, verify, findUser } = require("./lib");
+  { findOrCreate, purgeUser, verify, findUser } = require("./lib"),
+  errors = require("../codes/error.json");
 
 // -----------------------------------------------------------------
 
@@ -60,7 +61,7 @@ router.get("/api/signin", (req, res) => {
                 req.session.user = user;
 
                 throw new Error({
-                  code: "user_not_registered",
+                  code: errors.user_not_registered,
                   text: "User is not registered, let user Sign Up by choosing a unique username.",
                 });
               } else {
@@ -82,7 +83,7 @@ router.get("/api/signin", (req, res) => {
       });
   } else {
     res.status(401).json({
-      code: "bad_authorization_token",
+      code: errors.bad_authorization_token,
       text: "Bearer Token sent as Authorization header is invalid.",
     });
   }
@@ -123,13 +124,13 @@ router.post("/api/v1/signout", isAuthenticated, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       res.status(401).json({
-        code: "logout_unsuccessful",
+        code: errors.logout_unsuccessful,
         text: "We could not log you out. Please try logging out again",
       });
     }
 
     res.json({
-      code: "logout_successful",
+      code: errors.logout_successful,
       text: "You have successfully logged out. We will miss you.",
     });
   });
