@@ -122,8 +122,6 @@ async function findOrCreateWork(work) {
   let foundWork = await Work.findOne({ olid: id, title });
 
   if (foundWork) {
-    console.log(foundWork);
-    console.log(authors);
     return foundWork;
   }
 
