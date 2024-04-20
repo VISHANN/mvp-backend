@@ -1,0 +1,18 @@
+[
+  {
+    "id": "0",
+    "name": "To read"
+  },
+  {
+    "id": "1",
+    "name": "Reading now"
+  },
+  {
+    "id": "2",
+    "name": "Have read"
+  },
+  {
+    "id": "0",
+    "name": "Didn't finish"
+  }
+]
