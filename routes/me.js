@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { isAuthenticated } = require("../middleware");
 const { User } = require("../mongo/models");
+const { getPublication } = require('./lib/me');
 
 // -----------------------------------------------------------------
 
@@ -16,15 +17,7 @@ const headers = {
 
 router.get("/me/shelves", isAuthenticated, (req, res) => {
   // Write successful response status 200 in the header
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Access-Control-Allow-Origin": "http://localhost:3000",
-    "Access-Control-Allow-Credentials": "true",
-    "Access-Control-Expose-Headers": "*",
-
-    "Connection": "keep-alive",
-    "Cache-Control": "no-cache",
-  });
+  res.writeHead(200, headers);
 
   // Get all user shelves, where each shelf is an array of work OLIDs
   User.findOne({ _id: req.session.user._id }).then((user) => {
@@ -56,8 +49,16 @@ router.get("/me/shelves/:shelfId", isAuthenticated, async (req, res) => {
     // Loop through shelf and fetch work meta data from openlibrary of 
     for (workOLID of shelf) {
       const work = await fetchWork(workOLID);
+
+      // add publication to work meta data
+      work.publication = await getPublication(workOLID);
+
       res.write(`data: ${JSON.stringify(work)}\n\n`);
     }
+
+    req.on('close', () => {
+      res.end();
+    });
   } catch (error) {
     console.log(error);
   }
