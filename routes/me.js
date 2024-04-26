@@ -46,6 +46,14 @@ router.get("/me/shelves/:shelfId", isAuthenticated, async (req, res) => {
 
     let shelf = user.shelves[shelfId];
 
+    // send first event with length of shelf
+    const firstMessage = {
+      id: shelfId,
+      length: shelf.length,
+    }
+
+    res.write(`data: ${JSON.stringify(firstMessage)}\n\n`);
+
     // Loop through shelf and fetch work meta data from openlibrary of 
     for (workOLID of shelf) {
       const work = await fetchWork(workOLID);
